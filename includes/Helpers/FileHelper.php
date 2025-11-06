@@ -1,5 +1,5 @@
 <?php
-namespace Obfuscator\Utils;
+namespace Obfuscator\Helpers;
 
 class FileHelper {
     public static function normalize(string $p): string {

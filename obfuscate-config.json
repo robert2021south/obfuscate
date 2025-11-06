@@ -1,6 +1,19 @@
 {
   "whitelist": {
 
+    "dirs_to_obfuscate": [
+      "includes/license"
+    ],
+    "exclude_files": [
+      "includes/license/LicenseMessages.php",
+      "includes/license/LicenseConstants.php",
+      "includes/license/LicensePlans.php"
+    ],
+    "exclude_patterns":[
+      "autoload.php",
+      "helpers.php"
+    ],
+    "docblock_mode": "strip",
     "functions": [
       "add_action",
       "add_filter",
@@ -20,28 +33,11 @@
 
     ],
 
-    "classes": [
-      "WP_Query",
-      "WP_REST_Request",
-      "WP_Error",
-      "WP_User",
+    "classes": [],
 
-      "Settings",
-
-      "AdminColumns",
-      "Display",
-      "Tracker",
-
-      "Cleaner",
-      "Core",
-      "Export",
-      "RestApi",
-      "Sort",
-
-      "Loader",
-      "PCodeManager",
-      "Pro_Plugin_Updater",
-      "HooksRegistrar"
+    "properties": [
+      "instance",
+      "plugin_version"
     ],
 
     "methods": [
@@ -105,11 +101,6 @@
       "ABSPATH",
       "PLUGIN_VERSION",
       "WPINC"
-    ],
-
-    "exclude_patterns":[
-      "autoload.php",
-      "helpers.php"
     ]
 
   }

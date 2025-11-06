@@ -1,7 +1,7 @@
 <?php
 namespace Obfuscator\Core;
 
-use Obfuscator\Config\ConfigLoader;
+use Obfuscator\Helpers\FileHelper;
 use Obfuscator\Visitors\DocblockCleaner;
 use Obfuscator\Visitors\PropertyNameObfuscator;
 use Obfuscator\Visitors\WpFriendlyObfuscator;
@@ -15,9 +15,14 @@ class ObfuscatorRunner {
     private array $cliExcludes = [];
 
     public function __construct(private string $src, private string $out, private array $config = []) {
-        $this->src = FileHelper::normalize($this->src);
-        $this->out = FileHelper::normalize($this->out);
-    }
+        // 规范化为绝对路径并去掉末尾斜杠，保持统一格式
+        $normalizedSrc = FileHelper::normalize($this->src);
+        $realSrc = realpath($normalizedSrc);
+        $this->src = rtrim(str_replace('\\','/', ($realSrc ?: $normalizedSrc)), '/');
+
+        $normalizedOut = FileHelper::normalize($this->out);
+        $realOut = realpath($normalizedOut);
+        $this->out = rtrim(str_replace('\\','/', ($realOut ?: $normalizedOut)), '/');    }
 
     public function setCliDirs(array $dirs): void { $this->cliDirs = $dirs; }
     public function setCliExcludes(array $ex): void { $this->cliExcludes = $ex; }
@@ -72,7 +77,7 @@ class ObfuscatorRunner {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $printer = new Standard();
 
-        $docMode = $this->config['docblock_mode'] ?? 'sanitize';
+        $docMode = $this->config['docblock_mode'] ?? 'strip';
         $docCleaner = new DocblockCleaner($docMode);
         $propertyObf = new PropertyNameObfuscator();
         $wpObf = new WpFriendlyObfuscator($this->config);
