@@ -2,7 +2,8 @@
   "whitelist": {
 
     "dirs_to_obfuscate": [
-      "includes/license"
+      "includes/license",
+      "includes/core"
     ],
     "exclude_files": [
       "includes/license/LicenseMessages.php",

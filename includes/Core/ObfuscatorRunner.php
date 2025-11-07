@@ -127,6 +127,7 @@ class ObfuscatorRunner {
             $beforeMethods = $wpObf->methodMap;
             $beforeClasses = $wpObf->classMap;
             $beforeProps = $propertyObf->getMap();
+            $beforeConsts = $wpObf->constMap;
 
             $relative = substr($full, strlen($this->src) + 1);
             try {
@@ -143,12 +144,14 @@ class ObfuscatorRunner {
                 $afterMethods = $wpObf->methodMap;
                 $afterClasses = $wpObf->classMap;
                 $afterProps = $propertyObf->getMap();
+                $afterConsts = $wpObf->constMap;
 
                 $newVars = array_diff_key($afterVars, $beforeVars);
                 $newFuncs = array_diff_key($afterFuncs, $beforeFuncs);
                 $newMethods = array_diff_key($afterMethods, $beforeMethods);
                 $newClasses = array_diff_key($afterClasses, $beforeClasses);
                 $newProps = array_diff_key($afterProps, $beforeProps);
+                $newConsts = array_diff_key($afterConsts, $beforeConsts);
 
                 echo colorize("[Obfuscated] {$relative}\n", 'green');
                 if (!empty($newVars)) {
@@ -170,6 +173,10 @@ class ObfuscatorRunner {
                 if (!empty($newClasses)) {
                     $pairs = []; foreach ($newClasses as $o=>$m) $pairs[] = "{$o} -> {$m}";
                     echo colorize("  classes: " . implode(', ', $pairs) . PHP_EOL, 'yellow');
+                }
+                if (!empty($newConsts)) {
+                    $pairs = []; foreach ($newConsts as $o=>$m) $pairs[] = "{$o} -> {$m}";
+                    echo colorize("  constants: " . implode(', ', $pairs) . PHP_EOL, 'yellow');
                 }
 
             } catch (\Throwable $e) {

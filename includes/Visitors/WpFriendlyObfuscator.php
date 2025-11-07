@@ -9,6 +9,7 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
     public array $funcMap = [];
     public array $classMap = [];
     public array $methodMap = [];
+    public array $constMap = [];
 
     private int $varCounter = 0;
     private int $funcCounter = 0;
@@ -35,6 +36,59 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
             }
             $node->name = $this->varMap[$node->name];
             $node->setAttribute('already_obfuscated', true);
+        }
+
+        // constants (global const X = ...)
+        if ($node instanceof Node\Stmt\Const_) {
+            foreach ($node->consts as $const) {
+                $name = $const->name->name;
+                if (!in_array($name, $this->config['constants'] ?? [], true)) {
+                    if (!isset($this->constMap[$name])) {
+                        $this->constMap[$name] = $this->gen('c', count($this->constMap));
+                    }
+                    $const->name->name = $this->constMap[$name];
+                }
+            }
+        }
+
+        // class constants (class Foo { const BAR = 1; })
+        if ($node instanceof Node\Stmt\ClassConst) {
+            foreach ($node->consts as $const) {
+                $name = $const->name->name;
+                if (!isset($this->constMap[$name])) {
+                    $this->constMap[$name] = $this->gen('c', count($this->constMap));
+                }
+                $const->name->name = $this->constMap[$name];
+            }
+        }
+
+        // define('CONST_NAME', value)
+        if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && strtolower($node->name->toString()) === 'define') {
+            if (isset($node->args[0]) && $node->args[0]->value instanceof Node\Scalar\String_) {
+                $name = $node->args[0]->value->value;
+                if (!in_array($name, $this->config['constants'] ?? [], true)) {
+                    if (!isset($this->constMap[$name])) {
+                        $this->constMap[$name] = $this->gen('c', count($this->constMap));
+                    }
+                    $node->args[0]->value->value = $this->constMap[$name];
+                }
+            }
+        }
+
+        // constant usage (MY_CONST)
+        if ($node instanceof Node\Expr\ConstFetch && $node->name instanceof Node\Name) {
+            $name = $node->name->toString();
+            if (isset($this->constMap[$name])) {
+                $node->name = new Node\Name($this->constMap[$name]);
+            }
+        }
+
+        // class constant usage (Foo::BAR)
+        if ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
+            $name = $node->name->name;
+            if (isset($this->constMap[$name])) {
+                $node->name->name = $this->constMap[$name];
+            }
         }
 
         // function defs
@@ -87,6 +141,7 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
             'classes' => $this->classMap,
             'methods' => $this->methodMap,
             'properties' => $propMap,
+            'constants' => $this->constMap,
         ];
         $dir = dirname($filePath);
         if (!is_dir($dir)) @mkdir($dir, 0777, true);
