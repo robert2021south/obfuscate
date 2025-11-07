@@ -14,7 +14,6 @@
       "autoload.php",
       "helpers.php"
     ],
-    "docblock_mode": "strip",
     "functions": [
       "add_action",
       "add_filter",
@@ -30,7 +29,8 @@
       "wp_verify_nonce",
       "register_settings",
       "render_settings_page",
-      "render_settings_page2"
+      "render_settings_page2",
+      "wp_die"
 
     ],
 
@@ -95,7 +95,9 @@
       "$wpdb",
       "$post",
       "$user_ID",
-      "$current_user"
+      "$current_user",
+
+      "forceStandaloneForTests"
     ],
 
     "constants": [

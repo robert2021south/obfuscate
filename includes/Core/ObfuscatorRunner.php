@@ -2,7 +2,6 @@
 namespace Obfuscator\Core;
 
 use Obfuscator\Helpers\FileHelper;
-use Obfuscator\Visitors\DocblockCleaner;
 use Obfuscator\Visitors\PropertyNameObfuscator;
 use Obfuscator\Visitors\WpFriendlyObfuscator;
 use Obfuscator\Visitors\CallbackNameUpdater;
@@ -77,8 +76,6 @@ class ObfuscatorRunner {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $printer = new Standard();
 
-        $docMode = $this->config['docblock_mode'] ?? 'strip';
-        $docCleaner = new DocblockCleaner($docMode);
         $propertyObf = new PropertyNameObfuscator();
         $wpObf = new WpFriendlyObfuscator($this->config);
 
@@ -117,7 +114,6 @@ class ObfuscatorRunner {
 
             $code = file_get_contents($full);
             $traverser = new NodeTraverser();
-            $traverser->addVisitor($docCleaner);
             $traverser->addVisitor($propertyObf);
             $traverser->addVisitor($wpObf);
 
