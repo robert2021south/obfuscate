@@ -2,17 +2,27 @@
   "whitelist": {
 
     "dirs_to_obfuscate": [
+      "includes/core",
       "includes/license",
-      "includes/core"
+      "includes/modules",
+      "includes/tasks",
+      "includes/traits",
+      "includes/updater",
+      "includes/utils"
     ],
     "exclude_files": [
+
       "includes/license/LicenseMessages.php",
       "includes/license/LicenseConstants.php",
-      "includes/license/LicensePlans.php"
+      "includes/license/LicensePlans.php",
+
+      "autoload.php",
+      "Context.php",
+
+      "includes/utils/RWLogger.php",
+      "includes/utils/TemplateLoader.php"
     ],
     "exclude_patterns":[
-      "autoload.php",
-      "helpers.php"
     ],
     "functions": [
       "add_action",
@@ -21,15 +31,17 @@
       "apply_filters",
       "register_activation_hook",
       "register_deactivation_hook",
+      "register_uninstall_hook",
       "__",
       "_e",
       "esc_html",
       "esc_attr",
       "wp_nonce_field",
       "wp_verify_nonce",
-      "register_settings",
-      "render_settings_page",
-      "render_settings_page2",
+      "check_ajax_referer",
+      "wp_send_json_success",
+      "is_wp_error",
+      "wp_remote_get",
       "wp_die"
 
     ],
@@ -58,8 +70,20 @@
       "prepare",
       "is_main_query",
       "get_col",
+      "get_instance",
 
-      "get_instance"
+      "get_global_option",
+      "update_global_option",
+      "delete_global_option",
+      "generate_nonce",
+      "get_admin_email",
+      "is_network_wide_activation",
+      "get_valid_ip",
+      "get_upgrade_url",
+      "terminate",
+      "mockGlobalOption",
+      "resetMock"
+
     ],
 
     "globals":[
@@ -97,13 +121,23 @@
       "$user_ID",
       "$current_user",
 
-      "forceStandaloneForTests"
+      "$forceStandaloneForTests",
+      "$mock_options",
+      "$mockIsValid"
     ],
 
     "constants": [
       "ABSPATH",
       "PLUGIN_VERSION",
-      "WPINC"
+      "WPINC",
+      "RWPSP_PLUGIN_NAME",
+      "RW_POSTVIEWSTATS_PRO",
+      "RWPSP_VERSION_OPTION",
+      "RWPSP_PLUGIN_VERSION",
+      "RWPSP_PLUGIN_FILE",
+      "RWPSP_PLUGIN_DIR",
+      "RWPSP_PLUGIN_URL",
+      "RWPSP_ASSETS_URL"
     ]
 
   }
