@@ -10,7 +10,6 @@ require __DIR__ . '/vendor/autoload.php';
 use Obfuscator\Config\ConfigLoader;
 use Obfuscator\Core\ObfuscatorRunner;
 use Obfuscator\Helpers\StripComment;
-use Random\RandomException;
 
 if (php_sapi_name() !== 'cli') {
     fwrite(STDERR, "This script must be run from CLI.\n");
@@ -22,6 +21,15 @@ $out = $argv[2] ?? null;
 if (!$src || !$out) {
     fwrite(STDERR, "Usage: php obfuscate.php <source_dir> <target_dir> [--dirs=\"dir1,dir2\"] [--exclude=\"file1,file2\"]\n");
     exit(1);
+}
+
+// --- 清空 out/includes 目录 ---
+$target = rtrim($out, '/\\') . '/includes';
+if (is_dir($target)) {
+    echo "[Info] Cleaning directory: $target\n";
+    shell_exec(PHP_OS_FAMILY === 'Windows'
+        ? "rmdir /s /q " . escapeshellarg($target)
+        : "rm -rf " . escapeshellarg($target));
 }
 
 // 默认将 runner 要用的源目录设为原始 src
