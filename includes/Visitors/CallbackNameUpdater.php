@@ -38,7 +38,7 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
             $fname = $node->name->toString();
 
             // add_action / add_filter array 或 string callback
-            if (in_array($fname, ['add_action','add_filter'], true) && isset($node->args[1])) {
+            if (in_array($fname, ['add_action','add_filter','add_shortcode'], true) && isset($node->args[1])) {
                 $arg = $node->args[1]->value;
 
                 if ($arg instanceof Node\Scalar\String_) {
@@ -60,7 +60,28 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
                         }
                     }
                 }
+
+                // 处理嵌套形式 self::cb([Class::class, 'method'])
+                if ($arg instanceof Node\Expr\StaticCall && $arg->class instanceof Name && $arg->name instanceof Identifier) {
+                    if (strtolower($arg->name->name) === 'cb' && isset($arg->args[0])) {
+                        $inner = $arg->args[0]->value;
+                        if ($inner instanceof Node\Expr\Array_ && count($inner->items) >= 2) {
+                            $second = $inner->items[1]->value;
+                            if ($second instanceof Node\Scalar\String_) {
+                                $origMethod = $second->value;
+                                if (isset($this->methodMap[$origMethod])) {
+                                    $mapped = $this->methodMap[$origMethod];
+                                    $second->value = $mapped;
+                                    $this->logReplace($fname . " nested static callback", $origMethod, $mapped);
+                                }
+                            }
+                        }
+                    }
+                }
+
+
             }
+
 
             // register_rest_route callback
             if ($fname === 'register_rest_route' && isset($node->args[2])) {

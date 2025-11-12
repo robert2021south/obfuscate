@@ -102,12 +102,23 @@ class ObfuscatorRunner {
 
             // 2) exact exclude
             if (in_array($full, $excludeFilesNormalized, true)) {
+                $rel = substr($full, strlen($this->src) + 1);
+                $dest = $this->out . '/' . $rel;
+                FileHelper::ensureDir($dest);
+                copy($full, $dest);
+                echo colorize("[Copied excluded file] {$rel}\n", 'cyan');
                 echo colorize("[Skip - exact exclude] " . substr($full, strlen($this->src)+1) . "\n", 'yellow');
                 continue;
             }
 
             // 3) pattern exclude
-            if ($this->shouldExcludePattern($full, $this->config['exclude_patterns'] ?? [])) {
+            $excludePatternsOut = $this->config['exclude_patterns'] ?? [];
+            if ($this->shouldExcludePattern($full, $excludePatternsOut)) {
+                $rel = substr($full, strlen($this->src) + 1);
+                $dest = $this->out . '/' . $rel;
+                FileHelper::ensureDir($dest);
+                copy($full, $dest);
+                echo colorize("[Copied excluded file] {$rel}\n", 'reset');
                 echo colorize("[Skip - pattern exclude] " . substr($full, strlen($this->src)+1) . "\n", 'yellow');
                 continue;
             }
@@ -198,16 +209,28 @@ class ObfuscatorRunner {
 
         // normalize exclude list for output dir
         $excludeNormalizedOut = $this->normalizeExcludeFiles($this->config['exclude_files'] ?? []);
+        $excludePatternsOut = $this->config['exclude_patterns'] ?? [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->out)) as $f) {
             if ($f->isDir()) continue;
             if ($f->getExtension() !== 'php') continue;
             $fp = str_replace('\\','/',$f->getRealPath());
-            if (in_array($fp, $excludeNormalizedOut, true)) {
-                echo colorize("[Skip - excluded] " . substr($fp, strlen($this->out)+1) . "\n", 'yellow');
+
+            $relativeOut = substr($fp, strlen($this->out) + 1);
+
+            // 增加 pattern 排除
+            $relativeSrc = substr(str_replace('\\','/',$fp), strlen($this->out) + 1);
+            $srcEquivalent = $this->src . '/' . $relativeSrc;
+            if ($this->shouldExcludePattern($srcEquivalent, $excludePatternsOut)) {
+                echo colorize("[Skip - pattern excluded] {$relativeOut}\n", 'yellow');
                 continue;
             }
 
-            $relativeOut = substr($fp, strlen($this->out) + 1);
+            if (in_array($fp, $excludeNormalizedOut, true)) {
+                echo colorize("[Skip - exact excluded] " . $relativeOut . "\n", 'yellow');
+                continue;
+            }
+
+            //$relativeOut = substr($fp, strlen($this->out) + 1);
             $GLOBALS['CURRENT_OBFUSCATE_FILE'] = $relativeOut;
             try {
                 $code = file_get_contents($fp);

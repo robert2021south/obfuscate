@@ -2,16 +2,10 @@
   "whitelist": {
 
     "dirs_to_obfuscate": [
-      "includes/core",
-      "includes/license",
-      "includes/modules",
-      "includes/services",
-      "includes/tasks",
-      "includes/traits",
-      "includes/updater",
-      "includes/utils"
+      "includes"
     ],
     "exclude_files": [
+
 
       "includes/Core/Context.php",
 
@@ -28,6 +22,10 @@
       "includes/autoload.php"
     ],
     "exclude_patterns":[
+      "includes/admin/ui/**",
+      "includes/assets/**",
+      "includes/templates/**",
+      "includes/infrastructure/**"
     ],
     "functions": [
       "add_action",
@@ -55,7 +53,8 @@
 
     "properties": [
       "plugin_version",
-      "instance"
+      "instance",
+      "callbackCache"
     ],
 
     "methods": [
@@ -89,8 +88,11 @@
       "mockGlobalOption",
       "resetMock",
 
+      "check",
+
       "register",
       "is_plugin_context",
+      "plugin_context_only",
 
       "run",
       "activate",
