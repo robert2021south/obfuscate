@@ -13,15 +13,19 @@
     ],
     "exclude_files": [
 
+      "includes/Core/Context.php",
+
       "includes/license/LicenseMessages.php",
       "includes/license/LicenseConstants.php",
       "includes/license/LicensePlans.php",
 
-      "autoload.php",
-      "Context.php",
+      "includes/modules/cleaner/templates/cleaner-page.php",
+      "includes/modules/export/templates/export-page.php",
 
       "includes/utils/RWLogger.php",
-      "includes/utils/TemplateLoader.php"
+      "includes/utils/TemplateLoader.php",
+
+      "includes/autoload.php"
     ],
     "exclude_patterns":[
     ],
@@ -85,10 +89,14 @@
       "mockGlobalOption",
       "resetMock",
 
+      "register",
+      "is_plugin_context",
+
       "run",
       "activate",
       "deactivate",
-      "uninstall"
+      "uninstall",
+      "cb"
     ],
 
     "globals": [

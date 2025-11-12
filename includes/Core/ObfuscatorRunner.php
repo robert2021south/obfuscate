@@ -76,7 +76,7 @@ class ObfuscatorRunner {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $printer = new Standard();
 
-        $propertyObf = new PropertyNameObfuscator();
+        $propertyObf = new PropertyNameObfuscator($this->config);
         $wpObf = new WpFriendlyObfuscator($this->config);
 
         $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->src));
