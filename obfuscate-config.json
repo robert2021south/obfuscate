@@ -5,6 +5,7 @@
       "includes/core",
       "includes/license",
       "includes/modules",
+      "includes/services",
       "includes/tasks",
       "includes/traits",
       "includes/updater",
@@ -49,8 +50,8 @@
     "classes": [],
 
     "properties": [
-      "instance",
-      "plugin_version"
+      "plugin_version",
+      "instance"
     ],
 
     "methods": [
@@ -82,12 +83,15 @@
       "get_upgrade_url",
       "terminate",
       "mockGlobalOption",
-      "resetMock"
+      "resetMock",
 
+      "run",
+      "activate",
+      "deactivate",
+      "uninstall"
     ],
 
-    "globals":[
-
+    "globals": [
       "GLOBALS",
       "_SERVER",
       "_GET",
@@ -102,25 +106,35 @@
       "post",
       "post_type",
       "query",
-      "columns",
-      "request",
-      "response",
-      "response_code",
-      "response_data",
-      "body",
-      "code",
-      "token",
+      "wp_query",
+      "wp_rewrite",
+      "wp",
+      "wp_roles",
+      "wp_current_filter",
+      "wp_object_cache",
+      "wp_locale",
+      "wp_widget_factory",
+      "wp_registered_sidebars",
+      "wp_registered_widgets",
+      "wp_scripts",
+      "wp_styles",
+      "wp_registered_nav_menus",
+      "wp_registered_widget_controls",
+      "wp_registered_widget_updates",
 
+      "user_ID",
+      "current_user",
+      "pagenow",
+      "typenow",
+      "plugin_page",
+      "action",
+      "option_page",
 
+      "GLOBALS",
       "this"
     ],
 
     "variables": [
-      "$wpdb",
-      "$post",
-      "$user_ID",
-      "$current_user",
-
       "$forceStandaloneForTests",
       "$mock_options",
       "$mockIsValid"
