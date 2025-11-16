@@ -38,6 +38,7 @@ class ConfigLoader {
             'globals' => $globals,
             'variables' => $variables,
             'constants' => $w['constants'] ?? [],
+            'obfuscate_constants' => $w['obfuscate_constants'] ?? false,  // 默认不混淆常量
         ];
     }
 }

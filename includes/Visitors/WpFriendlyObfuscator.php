@@ -47,6 +47,11 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
 
         // constants (global const X = ...)
         if ($node instanceof Node\Stmt\Const_) {
+
+            // ⭐ 添加这一行：默认不混淆常量
+            if (!($this->config['obfuscate_constants'] ?? false)) {
+                return;
+            }
             foreach ($node->consts as $const) {
                 $name = $const->name->name;
                 if (!in_array($name, $this->config['constants'] ?? [], true)) {
@@ -60,6 +65,11 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
 
         // class constants (class Foo { const BAR = 1; })
         if ($node instanceof Node\Stmt\ClassConst) {
+
+            // ⭐ 添加这一行：默认不混淆
+            if (!($this->config['obfuscate_constants'] ?? false)) {
+                return;
+            }
             foreach ($node->consts as $const) {
                 $name = $const->name->name;
 
@@ -76,6 +86,11 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
 
         // define('CONST_NAME', value)
         if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && strtolower($node->name->toString()) === 'define') {
+            // ⭐ 添加这一行：默认不混淆
+            if (!($this->config['obfuscate_constants'] ?? false)) {
+                return;
+            }
+
             if (isset($node->args[0]) && $node->args[0]->value instanceof Node\Scalar\String_) {
                 $name = $node->args[0]->value->value;
                 if (!in_array($name, $this->config['constants'] ?? [], true)) {
@@ -89,6 +104,10 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
 
         // constant usage (MY_CONST)
         if ($node instanceof Node\Expr\ConstFetch && $node->name instanceof Node\Name) {
+            // ⭐ 添加这一行：默认不混淆
+            if (!($this->config['obfuscate_constants'] ?? false)) {
+                return;
+            }
             $name = $node->name->toString();
             if (isset($this->constMap[$name])) {
                 $node->name = new Node\Name($this->constMap[$name]);
@@ -97,6 +116,10 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
 
         // class constant usage (Foo::BAR)
         if ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
+            // ⭐ 添加这一行：默认不混淆
+            if (!($this->config['obfuscate_constants'] ?? false)) {
+                return;
+            }
             $name = $node->name->name;
             if (isset($this->constMap[$name])) {
                 $node->name->name = $this->constMap[$name];
