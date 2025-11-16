@@ -27,8 +27,15 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
     public function enterNode(Node $node) {
         // variables
         if ($node instanceof Node\Expr\Variable && is_string($node->name)) {
+            // $this must never be obfuscated
+            if ($node->name === 'this') {
+                return;
+            }
+
             if ($node->hasAttribute('already_obfuscated')) return;
-            if (in_array($node->name, $this->config['globals'] ?? ['this','GLOBALS','_POST','_GET','_REQUEST','_SERVER','_FILES','_COOKIE','_SESSION'], true)) {
+
+            // globals whitelist
+            if (in_array($node->name, $this->config['globals'] ?? [], true)) {
                 return;
             }
             if (!isset($this->varMap[$node->name])) {
@@ -55,6 +62,11 @@ class WpFriendlyObfuscator extends NodeVisitorAbstract {
         if ($node instanceof Node\Stmt\ClassConst) {
             foreach ($node->consts as $const) {
                 $name = $const->name->name;
+
+                if (in_array($name, $this->config['constants'] ?? [], true)) {
+                    continue; // 白名单：跳过，不生成、不替换
+                }
+
                 if (!isset($this->constMap[$name])) {
                     $this->constMap[$name] = $this->gen('c', count($this->constMap));
                 }

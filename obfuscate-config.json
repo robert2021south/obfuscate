@@ -6,7 +6,6 @@
     ],
     "exclude_files": [
 
-
       "includes/Core/Context.php",
       "includes/Core/CallbackWrapper.php",
 
@@ -151,19 +150,7 @@
       "$mockIsValid"
     ],
 
-    "constants": [
-      "ABSPATH",
-      "PLUGIN_VERSION",
-      "WPINC",
-      "RWPSP_PLUGIN_NAME",
-      "RW_POSTVIEWSTATS_PRO",
-      "RWPSP_VERSION_OPTION",
-      "RWPSP_PLUGIN_VERSION",
-      "RWPSP_PLUGIN_FILE",
-      "RWPSP_PLUGIN_DIR",
-      "RWPSP_PLUGIN_URL",
-      "RWPSP_ASSETS_URL"
-    ]
+    "constants": []
 
   }
 }
