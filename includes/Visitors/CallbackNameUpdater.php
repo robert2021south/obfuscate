@@ -12,11 +12,51 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
     private array $funcMap;
     private array $methodMap;
     private ?string $currentClassName = null;
+    // --- PATCH START ---
+    private array $obfuscatedClasses;     // 需要混淆的类
+    private array $whiteListFiles;        // 白名单文件（exclude_files + exclude_patterns）
+    public array $neededWhitelistClasses = []; // 自动发现的需要加入白名单的类
+    private bool $isCurrentFileWhitelisted = false;
+    // --- PATCH END ---
 
-    public function __construct(array $funcMap = [], array $methodMap = []) {
+    public function __construct(array $funcMap = [], array $methodMap = [], array $obfuscatedClasses = [], array $whiteListFiles = []) {
         $this->funcMap = $funcMap;
         $this->methodMap = $methodMap;
+
+        // --- PATCH START ---
+        $this->obfuscatedClasses = $obfuscatedClasses;
+        $this->whiteListFiles = $whiteListFiles;
+
+        $current = $GLOBALS['CURRENT_OBFUSCATE_FILE'] ?? '';
+        $this->isCurrentFileWhitelisted = $this->matchWhitelistFile($current);
+        // --- PATCH END ---
+
     }
+
+    // --- PATCH START ---
+    private function matchWhitelistFile(string $file): bool {
+        foreach ($this->whiteListFiles as $pattern) {
+            if (str_contains($pattern, '*')) {
+                $regex = "#^" . str_replace('\*', '.*', preg_quote($pattern, '#')) . "$#";
+                if (preg_match($regex, $file)) {
+                    return true;
+                }
+            } else {
+                if (str_ends_with($file, $pattern)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function markClassAsNeeded(string $className): void {
+        if (!in_array($className, $this->neededWhitelistClasses, true)) {
+            $this->neededWhitelistClasses[] = $className;
+            echo "[AutoWhitelist] Class '{$className}' needs whitelist because it calls obfuscated methods.\n";
+        }
+    }
+    // --- PATCH END ---
 
     private function currentFile(): string {
         return $GLOBALS['CURRENT_OBFUSCATE_FILE'] ?? '(unknown)';
@@ -133,6 +173,12 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
             }
 
             if ($mapped) {
+                // --- PATCH START: Auto whitelist dependency ---
+                if ($this->isCurrentFileWhitelisted && $this->currentClassName) {
+                    $this->markClassAsNeeded($this->currentClassName);
+                }
+                // --- PATCH END ---
+
                 $node->name = new Identifier($mapped);
                 $this->logReplace('MethodCall', $methodName, $mapped);
             }
@@ -155,6 +201,12 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
             }
 
             if ($mapped) {
+                // --- PATCH START: Auto whitelist dependency ---
+                if ($this->isCurrentFileWhitelisted && $this->currentClassName) {
+                    $this->markClassAsNeeded($this->currentClassName);
+                }
+                // --- PATCH END ---
+                //
                 $node->name = new Identifier($mapped);
                 $this->logReplace('StaticCall', $methodName, $mapped);
             }

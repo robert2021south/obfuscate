@@ -204,12 +204,24 @@ class ObfuscatorRunner {
         $map = json_decode(file_get_contents($mapPath), true);
         $funcMap = $map['functions'] ?? [];
         $methodMap = $map['methods'] ?? [];
-        $traverser2 = new NodeTraverser();
-        $traverser2->addVisitor(new CallbackNameUpdater($funcMap, $methodMap));
 
-        // normalize exclude list for output dir
+        // ---------- BEGIN PATCH ----------
+        // 把 exclude list 规范化（输出目录对应的绝对路径），并把 patterns 一并传给 CallbackNameUpdater
         $excludeNormalizedOut = $this->normalizeExcludeFiles($this->config['exclude_files'] ?? []);
         $excludePatternsOut = $this->config['exclude_patterns'] ?? [];
+
+        // 将白名单文件列表与模式都传给 CallbackNameUpdater（最小改动）
+        // 如果你的 CallbackNameUpdater 构造函数为 (funcMap, methodMap, obfuscatedClasses, whiteListFiles)
+        // 这里我们将 obfuscatedClasses 传为 map 中的 classes 的键（如果没有也可以传空）
+        $obfuscatedClasses = array_keys($map['classes'] ?? []);
+
+        // 合并具体文件与 pattern 列表，传给 updater （updater 内部应能判断 path 是否匹配这些模式）
+        $whiteListFiles = array_merge($excludeNormalizedOut, $excludePatternsOut);
+
+        $traverser2 = new NodeTraverser();
+        $traverser2->addVisitor(new CallbackNameUpdater($funcMap, $methodMap, $obfuscatedClasses, $whiteListFiles));
+        // ---------- END PATCH ----------
+
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->out)) as $f) {
             if ($f->isDir()) continue;
             if ($f->getExtension() !== 'php') continue;
@@ -218,17 +230,27 @@ class ObfuscatorRunner {
             $relativeOut = substr($fp, strlen($this->out) + 1);
 
             // 增加 pattern 排除
+            // 以前是判断后 continue —— 现在改为打印说明，但仍会处理该文件
             $relativeSrc = substr(str_replace('\\','/',$fp), strlen($this->out) + 1);
             $srcEquivalent = $this->src . '/' . $relativeSrc;
             if ($this->shouldExcludePattern($srcEquivalent, $excludePatternsOut)) {
-                echo colorize("[Skip - pattern excluded] {$relativeOut}\n", 'yellow');
-                continue;
+                echo colorize("[Note - pattern excluded (but processing for callbacks)] {$relativeOut}\n", 'cyan');
+                //echo colorize("[Skip - pattern excluded] {$relativeOut}\n", 'yellow');
+                //continue;不跳过当前循环；仍然执行 CallbackNameUpdater 来替换回调
             }
 
             if (in_array($fp, $excludeNormalizedOut, true)) {
-                echo colorize("[Skip - exact excluded] " . $relativeOut . "\n", 'yellow');
-                continue;
+                echo colorize("[Note - exact excluded (but processing for callbacks)] " . $relativeOut . "\n", 'cyan');
+                //echo colorize("[Skip - exact excluded] " . $relativeOut . "\n", 'yellow');
+                //continue;// 不跳过当前循环；仍然执行 CallbackNameUpdater 来替换回调
             }
+
+            // ---------- BEGIN PATCH ----------
+            // 重要：不要把白名单（exclude）文件跳过 —— 需要对这些文件也运行 CallbackNameUpdater
+            // 所以移除以下跳过逻辑（原来有的 shouldExcludePattern / in_array 跳过判断）
+            // 如果你仍想把某些白名单文件绝对排除在 Phase2 之外，请在这里添加额外判断，
+            // 但一般来说为修复白名单类调用混淆类的方法，必须对它们执行回调替换。
+            // ---------- END PATCH ----------
 
             //$relativeOut = substr($fp, strlen($this->out) + 1);
             $GLOBALS['CURRENT_OBFUSCATE_FILE'] = $relativeOut;
@@ -256,6 +278,7 @@ function colorize(string $text, string $color): string {
         'red' => "\033[31m",
         'green' => "\033[32m",
         'yellow' => "\033[33m",
+        'cyan'   => "\033[36m",
         'reset' => "\033[0m",
     ];
     return ($colors[$color] ?? '') . $text . $colors['reset'];
