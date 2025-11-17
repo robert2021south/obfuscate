@@ -98,7 +98,13 @@
       "activate",
       "deactivate",
       "uninstall",
-      "cb"
+      "cb",
+
+      "render_page",
+      "render_export_page",
+      "render_cleaner_page",
+      "render_license_page"
+
     ],
 
     "globals": [
