@@ -42,7 +42,7 @@ if not exist "%SRC_DIR%" (
 )
 
 echo [2/4] 执行PHP代码混淆...
-php obfuscate.php "%SRC_DIR%" "%OUT_DIR%"
+php obfuscator.php "%SRC_DIR%" "%OUT_DIR%"
 
 if errorlevel 1 (
     echo 错误: PHP混淆执行失败！
