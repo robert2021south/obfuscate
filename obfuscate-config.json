@@ -103,7 +103,8 @@
       "render_page",
       "render_export_page",
       "render_cleaner_page",
-      "render_license_page"
+      "render_license_page",
+      "render_network_settings_page"
 
     ],
 
