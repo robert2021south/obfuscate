@@ -68,6 +68,18 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
     }
 
     public function enterNode(Node $node) {
+
+        // Handle plain string method callback
+        if ($node instanceof Node\Scalar\String_) {
+            $value = $node->value;
+
+            if (isset($this->methodMap[$value])) {
+                $mapped = $this->methodMap[$value];
+                $node->value = $mapped;
+                $this->logReplace('String literal callback', $value, $mapped);
+            }
+        }
+
         // 记录当前类
         if ($node instanceof Node\Stmt\Class_) {
             $this->currentClassName = $node->name?->toString();
@@ -141,6 +153,41 @@ class CallbackNameUpdater extends NodeVisitorAbstract {
                     }
                 }
             }
+
+            // register_rest_route(['callback' => [ClassName::class, 'method']])
+            if ($fname === 'register_rest_route' && isset($node->args[2])) {
+                $arg = $node->args[2]->value;
+
+                if ($arg instanceof Node\Expr\Array_) {
+                    foreach ($arg->items as $item) {
+                        if (
+                            $item->key instanceof Node\Scalar\String_
+                            && $item->key->value === 'callback'
+                            && $item->value instanceof Node\Expr\Array_
+                        ) {
+                            $callbackArr = $item->value->items;
+
+                            // [ClassName, 'method'] → 修改第二项
+                            if (count($callbackArr) >= 2) {
+                                $second = $callbackArr[1]->value;
+                                if ($second instanceof Node\Scalar\String_) {
+                                    $orig = $second->value;
+
+                                    if (isset($this->methodMap[$orig])) {
+                                        $mapped = $this->methodMap[$orig];
+                                        $second->value = $mapped;
+                                        $this->logReplace('register_rest_route array callback', $orig, $mapped);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
         }
 
         // [$this, 'method'] 数组回调
