@@ -34,14 +34,14 @@ if errorlevel 2 (
     exit /b 0
 )
 
-echo [1/4] 检查源目录是否存在...
+echo [1/5] 检查源目录是否存在...
 if not exist "%SRC_DIR%" (
     echo 错误: 源目录 "%SRC_DIR%" 不存在！
     pause
     exit /b 1
 )
 
-echo [2/4] 执行PHP代码混淆...
+echo [2/5] 执行PHP代码混淆...
 php obfuscator.php "%SRC_DIR%" "%OUT_DIR%"
 
 if errorlevel 1 (
@@ -50,13 +50,18 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [3/4] 检查并清理目标目录...
+echo [3/5] 检查并清理目标目录和映射文件...
 if exist "%TARGET_DIR%\includes" (
     echo 删除旧的includes目录...
     rmdir /s /q "%TARGET_DIR%\includes"
 )
 
-echo [4/4] 复制新的includes目录...
+if exist "%TARGET_DIR%\obfuscation-map.json" (
+    echo 删除旧的映射文件...
+    del /f /q "%TARGET_DIR%\obfuscation-map.json"
+)
+
+echo [4/5] 复制新的includes目录...
 if exist "%OUT_DIR%\includes" (
     xcopy "%OUT_DIR%\includes" "%TARGET_DIR%\includes\" /E /I /Y
     echo 文件复制完成！
@@ -64,9 +69,15 @@ if exist "%OUT_DIR%\includes" (
     echo 警告: 输出目录中未找到includes文件夹
 )
 
-echo.
+echo [5/5] 复制新的映射文件...
+if exist "%OUT_DIR%\obfuscation-map.json" (
+    copy /Y "%OUT_DIR%\obfuscation-map.json" "%TARGET_DIR%\obfuscation-map.json"
+    echo 新的映射文件复制完成！
+) else (
+    echo 警告: 输出目录中未找到obfuscation-map.json映射文件
+)
+
+
 echo ========================================
 echo           操作完成！
 echo ========================================
-
-pause
